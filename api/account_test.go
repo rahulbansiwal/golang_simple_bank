@@ -10,8 +10,8 @@ import (
 	"net/http/httptest"
 	mockdb "simple_bank/db/mock"
 	db "simple_bank/db/sqlc"
-	"simple_bank/token"
 	"simple_bank/db/util"
+	"simple_bank/token"
 	"testing"
 	"time"
 
@@ -20,8 +20,8 @@ import (
 )
 
 func TestGetAccountAPI(t *testing.T) {
-	user:= randomUser()
-	require.NotEmpty(t,user)
+	user := randomUser()
+	require.NotEmpty(t, user)
 	acc := randomAccount(user.Username)
 	testCases := []struct {
 		name          string
@@ -31,7 +31,7 @@ func TestGetAccountAPI(t *testing.T) {
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
-			name:      "OK",
+			name:      "ValidCase",
 			accountId: acc.ID,
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -105,7 +105,7 @@ func TestGetAccountAPI(t *testing.T) {
 			url := fmt.Sprintf("/accounts/%d", tc.accountId)
 			reqeust, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
-			tc.setupAuth(t,reqeust,server.tokenMaker)
+			tc.setupAuth(t, reqeust, server.tokenMaker)
 			server.router.ServeHTTP(recorder, reqeust)
 			tc.checkResponse(t, recorder)
 		})
@@ -115,8 +115,8 @@ func TestGetAccountAPI(t *testing.T) {
 
 func TestCreateAccountAPI(t *testing.T) {
 	url := "/accounts"
-	user:= randomUser()
-	require.NotEmpty(t,user)
+	user := randomUser()
+	require.NotEmpty(t, user)
 	acc := createAccountRequest{
 		Currency: util.RandomCurrency(),
 	}
@@ -132,7 +132,7 @@ func TestCreateAccountAPI(t *testing.T) {
 		name          string
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
-		setupAuth func(t *testing.T, req *http.Request, tokenMaker token.Maker)
+		setupAuth     func(t *testing.T, req *http.Request, tokenMaker token.Maker)
 	}{
 		{
 			name: "OK",
@@ -188,7 +188,7 @@ func TestCreateAccountAPI(t *testing.T) {
 			recorder := httptest.NewRecorder()
 			request, err := http.NewRequest(http.MethodPost, url, reader)
 			require.NoError(t, err)
-			tc.setupAuth(t,request,server.tokenMaker)
+			tc.setupAuth(t, request, server.tokenMaker)
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
 		})
@@ -215,11 +215,11 @@ func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, account db.Accoun
 	require.Equal(t, account, gotAccount)
 }
 
-func randomUser() db.User{
+func randomUser() db.User {
 	return db.User{
-		Username: util.RandomOwner(),
-		Email: util.RandomEmail(),
+		Username:       util.RandomOwner(),
+		Email:          util.RandomEmail(),
 		HashedPassword: util.RandomString(8),
-		CreatedAt: time.Now(),
+		CreatedAt:      time.Now(),
 	}
 }
