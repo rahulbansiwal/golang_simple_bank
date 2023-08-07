@@ -20,7 +20,7 @@
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
       - name: Build tag and push to ECR
-        id: build and push
+        id: push
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITRY: simplebank
