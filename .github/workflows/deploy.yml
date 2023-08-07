@@ -1,37 +1,38 @@
 # This is a basic workflow to help you get started with Actions
-name: Deploy to production
+  name: Deploy to production
 
 # Controls when the workflow will run
-on:
-  push:
-    branches: [ "main" ]
+  on:
+    push:
+      branches: [ "main" ]
 
-jobs:
-  login-to-amazon-ecr:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-1
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-    outputs:
-      registry: ${{ steps.login-ecr.outputs.registry }}
-      docker_username: ${{ steps.login-ecr.outputs.docker_username_123456789012_dkr_ecr_us_east_1_amazonaws_com }} # More information on these outputs can be found below in the 'Docker Credentials' section
-      docker_password: ${{ steps.login-ecr.outputs.docker_password_123456789012_dkr_ecr_us_east_1_amazonaws_com }}      
-    - name: Build tag and push to ECR
-      id: build and push
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITRY: simplebank
-        IMAGE_TAG: ${{github.sha}}
-      run:
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITRY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITRY:$IMAGE_TAG
+  jobs:
+    login-to-amazon-ecr:
+      runs-on: ubuntu-latest
+      steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Build tag and push to ECR
+        id: build and push
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITRY: simplebank
+          IMAGE_TAG: ${{github.sha}}
+        run:
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITRY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITRY:$IMAGE_TAG
+      outputs:
+        registry: ${{ steps.login-ecr.outputs.registry }}
+        docker_username: ${{ steps.login-ecr.outputs.docker_username_123456789012_dkr_ecr_us_east_1_amazonaws_com }} # More information on these outputs can be found below in the 'Docker Credentials' section
+        docker_password: ${{ steps.login-ecr.outputs.docker_password_123456789012_dkr_ecr_us_east_1_amazonaws_com }}      
+      
 
 
   
