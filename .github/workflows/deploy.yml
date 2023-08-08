@@ -35,6 +35,9 @@
           docker build -t simple_bank .
           docker tag simple_bank:latest 151748193088.dkr.ecr.eu-west-1.amazonaws.com/simple_bank:latest
           docker push 151748193088.dkr.ecr.eu-west-1.amazonaws.com/simple_bank:latest
+      - name: Update kube config
+        run: aws eks update-kubeconfig --name simplebank --region eu-west-1
+
       - name: Deploy image to EKS Cluster
         run: |
           kubectl apply -f eks/aws-auth.yml
