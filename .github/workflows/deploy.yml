@@ -8,8 +8,14 @@
 
   jobs:
     login-to-amazon-ecr:
+      name: build image
       runs-on: ubuntu-latest
       steps:
+      - name: Install kubectl 
+        uses: azure/setup-kubectl@v3
+        with:
+          version: '1.27'
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -27,16 +33,16 @@
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITRY: simplebank
-          IMAGE_TAG: ${{github.sha}}
         run: |
           docker build -t simple_bank .
           docker tag simple_bank:latest 151748193088.dkr.ecr.eu-west-1.amazonaws.com/simple_bank:latest
           docker push 151748193088.dkr.ecr.eu-west-1.amazonaws.com/simple_bank:latest
-      outputs:
-        registry: ${{ steps.login-ecr.outputs.registry }}
-        docker_username: ${{ steps.login-ecr.outputs.docker_username_123456789012_dkr_ecr_us_east_1_amazonaws_com }} # More information on these outputs can be found below in the 'Docker Credentials' section
-        docker_password: ${{ steps.login-ecr.outputs.docker_password_123456789012_dkr_ecr_us_east_1_amazonaws_com }}      
-      
+      - name: Deploy image to EKS Cluster
+        run: |
+          kubectl apply -f eks/aws-auth.yml
+          kubectl apply -f eks/deployment.yaml
+          kubectl apply -f eks/service.yml
+
 
 
   
