@@ -23,8 +23,12 @@ type LoginUserRequest struct {
 }
 
 type LoginUserResponse struct {
-	AccessToken string       `json:"access_token"`
-	User        UserResponse `json:"user"`
+	SessionId                  string       `json:"session_id"`
+	AccessToken                string       `json:"access_token"`
+	AccessTokenExpiredAt       time.Time    `json:"access_token_expired_at"`
+	RefreshToken         string       `json:"refresh_token"`
+	RefreshTokenExpiredAt time.Time    `json:"refresh_token_expired_at"`
+	User                       UserResponse `json:"user"`
 }
 
 type UserResponse struct {
@@ -103,13 +107,32 @@ func (s *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	accesstoken, err := s.tokenMaker.CreateToken(req.Username, s.config.AccessTokenDuration)
+	accesstoken, accessPayload, err := s.tokenMaker.CreateToken(req.Username, s.config.AccessTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
+	refreshToken, refreshPayload, err := s.tokenMaker.CreateToken(req.Username, s.config.RefreshTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	s.store.CreateSession(ctx, db.CreateSessionParams{
+		ID:           refreshPayload.ID,
+		Username:     req.Username,
+		RefreshToken: refreshToken,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(), //TODO
+		IsBlocked:    false,
+		ExpiredAt:    refreshPayload.ExpiredAt,
+	})
 
 	res := LoginUserResponse{
+		SessionId: refreshPayload.ID.String(),
 		AccessToken: accesstoken,
+		AccessTokenExpiredAt: accessPayload.ExpiredAt,
+		RefreshToken: refreshToken ,
+		RefreshTokenExpiredAt: refreshPayload.ExpiredAt,
 		User:        NewUserResponse(user),
 	}
 	ctx.JSON(http.StatusOK, res)

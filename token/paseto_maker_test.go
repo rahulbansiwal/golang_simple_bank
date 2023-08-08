@@ -17,12 +17,13 @@ func TestCreatePasetoToken(t *testing.T) {
 	duration := time.Minute
 	issuedAt := time.Now()
 	expired_at := issuedAt.Add(duration)
-	token, err := maker.CreateToken(username, duration)
+	token,payload, err := maker.CreateToken(username, duration)
 	fmt.Println(token)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
+	require.NotEmpty(t,payload)
 
-	payload, err := maker.VerifyToken(token)
+	payload, err = maker.VerifyToken(token)
 	require.NoError(t, err)
 	require.NotEmpty(t, payload)
 	require.NotZero(t, payload.ID)

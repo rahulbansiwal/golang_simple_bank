@@ -27,10 +27,10 @@ func NewJWTMaker(secretkey string) (Maker, error) {
 	return &JWTMaker{secretkey}, nil
 }
 
-func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (string, error) {
+func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (string,*Payload, error) {
 	payload, err := NewPayload(username, duration)
 	if err != nil {
-		return "", err
+		return "",payload ,err
 	}
 	claims := MyCustomClaims{
 		username,
@@ -42,7 +42,8 @@ func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (str
 		},
 	}
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return jwtToken.SignedString([]byte(maker.secretKey))
+	token,err:= jwtToken.SignedString([]byte(maker.secretKey))
+	return token,payload,err
 }
 func (maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
 	Keyfunc := func(token *jwt.Token) (interface{}, error) {

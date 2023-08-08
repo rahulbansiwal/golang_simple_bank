@@ -1,3 +1,5 @@
+DB_URL=postgresql://admin:admin@localhost:5432/simple_bank?sslmode=disable
+
 postgres:
 	docker run --name postgres-server --network simplebank   -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=admin  -p 5432:5432 -d  338ccfade89d
 
@@ -5,16 +7,19 @@ createdb:
 	docker exec -it postgres-server createdb --username=admin --owner=admin simple_bank
 
 migrateup:
-	migrate -path db/migration -database "postgresql://admin:admin@localhost:5432/simple_bank?sslmode=disable" -verbose up
+	migrate -path db/migration -database "$(DB_URL)" -verbose up
 
 migrateup1:
-	migrate -path db/migration -database "postgresql://admin:admin@localhost:5432/simple_bank?sslmode=disable" -verbose up 1
+	migrate -path db/migration -database "$(DB_URL)" -verbose up 1
 
 migratedown:
-	migrate -path db/migration/ -database "postgresql://admin:admin@localhost:5432/simple_bank?sslmode=disable" -verbose down
+	migrate -path db/migration/ -database "$(DB_URL)" -verbose down
 
 migratedown1:
-	migrate -path db/migration/ -database "postgresql://admin:admin@localhost:5432/simple_bank?sslmode=disable" -verbose down 1
+	migrate -path db/migration/ -database "$(DB_URL)" -verbose down 1
+
+migratedown2:
+	migrate -path db/migration/ -database "$(DB_URL)" -verbose down 2
 
 
 dropdb:
