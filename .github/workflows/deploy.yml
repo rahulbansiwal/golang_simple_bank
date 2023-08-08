@@ -13,8 +13,6 @@
       steps:
       - name: Install kubectl 
         uses: azure/setup-kubectl@v3
-        with:
-          version: 'v1.27'
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
